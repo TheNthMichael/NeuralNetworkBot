@@ -15,10 +15,12 @@ from dataEncoding import *
 
 dirname = os.path.dirname(__file__)
 
+pressed_keys = []
+
 def train(batch_size, eta):
     #training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
     # For getting the sizes, we will read the first sample, then ignore it.
-    myData = os.path.join(dirname, "TestData", "dataset20210827013224")
+    myData = os.path.join(dirname, "TestData", "dataset_tps_akina10k")
     inputsize, outputsize = getSizes(myData)
     print(f"InputSize: {inputsize}\nOutputSize: {outputsize}")
     net = nnmodel.Network([inputsize, 40, 10, 40, outputsize])
@@ -29,6 +31,7 @@ def train(batch_size, eta):
     nnmodel.save_model(f"SavedModel{datetime.now().strftime('%Y%m%d%H%M%S')}", net)
 
 def on_press(key):
+    pressed_keys.append(str(key).lower())
     try:
         print('Bot pressed key {0}.'.format(key.char))
           
@@ -39,6 +42,7 @@ def on_press(key):
 stateManager = InputStateManager()
                
 def on_release(key):
+    pressed_keys.remove(str(key).lower())
     if key == Key.f2:
         stateManager.isRecording = not stateManager.isRecording
     if key == Key.esc:
@@ -47,7 +51,7 @@ def on_release(key):
     return stateManager.isNotExiting
 
 def play(model :nnmodel.Network):
-    myData = os.path.join(dirname, "TestData", "dataset20210827013224")
+    myData = os.path.join(dirname, "TestData", "dataset_tps_akina10k")
     stateManager.encoder.find_mouse_range(myData)
     keyboard = KeyController()
     mouse = MouseController()
@@ -66,6 +70,7 @@ def play(model :nnmodel.Network):
             img = np.array(img)
             img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
             small = cv2.resize(img, (1920 //  stateManager.scalar, 1080 //  stateManager.scalar))
+            img = small
             resolution = (1920 // stateManager.scalar) * (1080 //  stateManager.scalar)
 
             #img = cv2.Canny(img, threshold1=0, threshold2=200)
@@ -114,8 +119,11 @@ def play(model :nnmodel.Network):
                     cv2.putText(img, fps, (7, 25), cv2.FONT_HERSHEY_COMPLEX, 0.3, (255, 255, 255), 1, cv2.LINE_AA)
                     cv2.putText(img, printkey, (7, 55), cv2.FONT_HERSHEY_COMPLEX, 0.3, (255, 255, 255), 1, cv2.LINE_AA)
                     cv2.putText(img, printmouse, (7, 85), cv2.FONT_HERSHEY_COMPLEX, 0.3, (255, 255, 255), 1, cv2.LINE_AA)
+            else:
+                for pkey in pressed_keys:
+                    keyboard.release(pkey)
 
-            cv2.imshow('display', np.array(img))
+            cv2.imshow('display', img)
 
             if cv2.waitKey(25) & 0xFF == ord('q'):
                 cv2.destroyAllWindows()
@@ -131,5 +139,5 @@ def load_and_play(path :str) -> nnmodel.Network:
     
 
 if __name__ == "__main__":
-    #train(1353, 0.05)
-    load_and_play('SavedModel20210827014627')
+    #train(9408, 0.05)
+    load_and_play('model_tps_akina10k')
