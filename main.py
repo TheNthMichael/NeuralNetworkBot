@@ -1,4 +1,5 @@
 import argparse
+from dataCollector import DataCollector
 
 
 
@@ -21,6 +22,7 @@ if __name__ == "__main__":
         illegal = [args.train, args.play, args.model, args.eta]
         required = []
         validate(illegal, required)
+        dataCollector = DataCollector()
     elif args.train:
         illegal = [args.play, args.collect]
         required = [args.dataset]

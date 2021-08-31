@@ -64,3 +64,4 @@ def find_mouse_range(data_folder):
         yMouseMin = min(yMouseMin, mouse[1])
         yMouseMax = max(yMouseMax, mouse[1])
     return xMouseMin, xMouseMax, yMouseMin, yMouseMax
+

@@ -44,23 +44,25 @@ class TrainingExample:
         self.input_frame_count = input_frame_count
 
 class DataCollector:
-    def __init__(self, dataset_path) -> None:
+    def __init__(self, dataset_path:str=None) -> None:
         self.dataset_path = dataset_path
         if self.dataset_path == None:
             dirname = os.path.dirname(__file__)
             testdir = os.path.join(dirname, "TestData")
             if not os.path.exists(testdir):
                 os.mkdir(testdir)
+            
             self.dataset_path = os.path.join(testdir, \
                 f"dataset{datetime.now().strftime('%Y%m%d%H%M%S')}")
         os.mkdir(self.dataset_path)
         self.sct = mss()
     
     def write_state_to_output(self, sampleName, frame, mousedx,\
-        mousedy, keys_pressed):
+        mousedy, keys_pressed, keys_frame_count):
         file = os.path.join(self.dataset_path, sampleName)
         np.savez(file, image=frame, keys=np.array(keys_pressed),\
-            mouse=np.array([mousedx, mousedy]))
+            mouse=np.array([mousedx, mousedy]),\
+                keysframecount=np.array(keys_frame_count))
 
     def run(self):
         resize_tuple = (1920 //  stateManager.screen_cap_scale, 1080 //  stateManager.screen_cap_scale)
@@ -91,6 +93,8 @@ class DataCollector:
 
                     prev_mousex = cur_mousex
                     prev_mousey = cur_mousey
+
+                    this_frame_key_count = stateManager.update_keys_frame_count()
                     
                     
                     if stateManager.is_recording:
