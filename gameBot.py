@@ -11,7 +11,6 @@ from mss import mss
 from PIL import Image
 from pynput.keyboard import Key, Controller as KeyController
 from pynput.mouse import Button, Controller as MouseController
-from dataEncoding import *
 
 dirname = os.path.dirname(__file__)
 

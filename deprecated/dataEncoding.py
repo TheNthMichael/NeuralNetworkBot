@@ -77,7 +77,7 @@ class DataEncoderAndDecoder:
         y = clamp(y, 0, 1)
         return linmap(x, 0, 1, self.xMouseMin, self.xMouseMax), linmap(y, 0, 1, self.yMouseMin, self.yMouseMax)
 
-class InputStateManager:
+"""class InputStateManager:
     def __init__(self) -> None:
         self.encoder = DataEncoderAndDecoder()
         self.keys = [0 for _ in self.encoder.keyEncoder]
@@ -104,4 +104,4 @@ class InputStateManager:
         self.lastDx = x - self.lastMouseX
         self.lastDy = y - self.lastMouseY
         self.lastMouseX = x
-        self.lastMouseY = y
+        self.lastMouseY = y"""
