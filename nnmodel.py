@@ -11,6 +11,7 @@ and omits many desirable features.
 
 #### Libraries
 # Standard library
+from dataEncoder import linmap
 import random
 import pickle
 
@@ -36,6 +37,11 @@ class Network(object):
         self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
         self.weights = [np.random.randn(y, x)
                         for x, y in zip(sizes[:-1], sizes[1:])]
+        
+    def deregularize_mouse(self, mouse):
+        mouse[0] = linmap(mouse[0], 0, 1, self.model_attrs.xMouseMin, self.model_attrs.xMouseMax)
+        mouse[1] = linmap(mouse[1], 0, 1, self.model_attrs.yMouseMin, self.model_attrs.yMouseMax)
+        return mouse
 
     def feedforward(self, a):
         """Return the output of the network if ``a`` is input."""

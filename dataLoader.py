@@ -6,13 +6,12 @@ import dataEncoder
 class DataLoader:
     class NormalizedAttributes:
         def __init__(self) -> None:
-            self.xMouseMin = None
-            self.xMouseMax = None
-            self.yMouseMin = None
-            self.yMouseMax = None
-            self.imageValMin = None
-            self.imageValMax = None
-            self.map_mouse_to_sigmoid = None
+            self.xMouseMin = float('inf')
+            self.xMouseMax = float('-inf')
+            self.yMouseMin = float('inf')
+            self.yMouseMax = float('-inf')
+            self.imageValMin = 0
+            self.imageValMax = 1
 
     """Creates a new instance of the data loader.
     
@@ -25,14 +24,15 @@ class DataLoader:
         self.path = path
         self.normalize = normalize
         self.chunk_size = chunk_size
+        self.map_mouse_to_sigmoid = None
         # Our model will hold data for approx 12 frames of a key being held down.
         # after this point, it will just be flagged as "key has been down as long
         # as I've known."
         self.look_back_time = 12
         # As x approaches infinity norm_map approaches 1.
-        self.norm_map = lambda x: 1 - math.exp(-x/self.look_back_time)
+        self.norm_map = np.vectorize(lambda x: 1 - math.exp(-x/self.look_back_time))
         # As x approaches infinity invnorm_map approaches 0.
-        self.invnorm_map = lambda x: math.exp(-x/self.look_back_time)
+        self.invnorm_map = np.vectorize(lambda x: math.exp(-x/self.look_back_time))
 
         self.training_set = os.listdir(self.path)
         self.input_size, self.output_size = self.get_sizes()
@@ -45,14 +45,20 @@ class DataLoader:
         self._norm_attrs.imageValMax = 255
         for filename in os.listdir(self.path):
             filename = os.path.join(self.path, filename)
-            print(f"Opened {filename}.")
             file = np.load(filename)
             mouse = file['mouse']
             self._norm_attrs.xMouseMin = min(self._norm_attrs.xMouseMin, mouse[0])
             self._norm_attrs.xMouseMax = max(self._norm_attrs.xMouseMax, mouse[0])
             self._norm_attrs.yMouseMin = min(self._norm_attrs.yMouseMin, mouse[1])
             self._norm_attrs.yMouseMax = max(self._norm_attrs.yMouseMax, mouse[1])
-        self._norm_attrs.map_mouse_to_sigmoid = lambda x, y: (dataEncoder.linmap(x,\
+        self._norm_attrs.xMouseMax = max(abs(self._norm_attrs.xMouseMax), abs(self._norm_attrs.xMouseMin))
+        self._norm_attrs.xMouseMin = -self._norm_attrs.xMouseMax
+
+        self._norm_attrs.yMouseMax = max(abs(self._norm_attrs.yMouseMax), abs(self._norm_attrs.yMouseMin))
+        self._norm_attrs.yMouseMin = -self._norm_attrs.yMouseMax
+
+        print(f"""x-min: {self._norm_attrs.xMouseMin} x-max: {self._norm_attrs.xMouseMax}\ny-min: {self._norm_attrs.yMouseMin} y-max: {self._norm_attrs.yMouseMax}""")
+        self.map_mouse_to_sigmoid = lambda x, y: (dataEncoder.linmap(x,\
            self._norm_attrs.xMouseMin, self._norm_attrs.xMouseMax, 0, 1),\
                dataEncoder.linmap(y, self._norm_attrs.yMouseMin, self._norm_attrs.yMouseMax, 0, 1))
         
@@ -65,7 +71,6 @@ class DataLoader:
     def get_sizes(self):
         for filename in os.listdir(self.path):
             filename = os.path.join(self.path, filename)
-            print(f"Opened {filename}.")
             file = np.load(filename)
             keys = file['keys']
             mouse = file['mouse']
@@ -84,6 +89,8 @@ class DataLoader:
         assert(chunk_size is None or chunk_size > 0)
         trainingInputs = []
         trainingOutputs = []
+        if not chunk_size:
+            chunk_size = len(self.training_set)
         endpoint = min(len(self.training_set), chunk_size)
         training_subset = self.training_set[:endpoint]
         self.training_set = self.training_set[endpoint:]
@@ -100,7 +107,7 @@ class DataLoader:
             if self.normalize:
                 keysframecount = self.norm_map(keysframecount)
                 input = input / 255
-                mouse[0], mouse[1] = self._norm_attrs.map_mouse_to_sigmoid(mouse[0], mouse[1])
+                mouse[0], mouse[1] = self.map_mouse_to_sigmoid(mouse[0], mouse[1])
             input = np.append(input, keysframecount)
             input = input.reshape([input.shape[0], 1])
             output = np.append(keys, mouse)
