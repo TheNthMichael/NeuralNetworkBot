@@ -1,3 +1,4 @@
+from os import stat
 from dataCollector import DataCollector
 import cv2
 import ctypes
@@ -78,7 +79,7 @@ def play(model_path: str):
 
                 fucking_let_go_of_my_keys = keys[:]
                 
-                printkey = f"Keys: {str(output)}"
+                printkey = f"Keys: {stateManager.get_keys_pressed(keys)}"
 
                 #mouseOutput[0], mouseOutput[1] = stateManager.encoder.map_to_real(mouseOutput[0], mouseOutput[1])
                 mouseOutput = model.deregularize_mouse(mouseOutput)
@@ -117,15 +118,15 @@ def play(model_path: str):
                 cv2.putText(img, printmouse, (7, 85), cv2.FONT_HERSHEY_COMPLEX, 0.3, (255, 255, 255), 1, cv2.LINE_AA)
             
             else:
+                cv2.putText(img, "Not Recording", (7, 25), cv2.FONT_HERSHEY_COMPLEX, 0.3, (255, 255, 255), 1, cv2.LINE_AA)
                 for i in range(len(fucking_let_go_of_my_keys)):
                     key = dataEncoder.CODE_TO_KEY_MAP[i]
-                    if keys[i] == 1:
+                    if fucking_let_go_of_my_keys[i] == 1:
                         keyboard.release(key)
-                        keys[i] = 0
+                        fucking_let_go_of_my_keys[i] = 0
 
-            cv2.imshow('display', img)
-
-            if cv2.waitKey(25) & 0xFF == ord('q'):
+            cv2.imshow('ScreenCap', img)
+            if cv2.waitKey(1) & 0xFF == ord('p'):
                 cv2.destroyAllWindows()
                 stateManager.is_not_exiting = False
                 break

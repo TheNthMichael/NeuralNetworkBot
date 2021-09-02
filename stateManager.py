@@ -56,3 +56,14 @@ def get_keys_pressed():
     #debug_keys_pressed = [dataEncoder.map_code_to_key(x) if keys_pressed[x] else "-" for x in range(len(keys_pressed))].remove("-")
     return debug_keys_pressed
 
+"""This function is useful for printing the actual names
+of the keys pressed and also can be used for clearing all
+pressed keys."""
+def get_keys_pressed(my_keys_pressed):
+    debug_keys_pressed = []
+    for i in range(len(my_keys_pressed)):
+        if my_keys_pressed[i]:
+            debug_keys_pressed.append(dataEncoder.map_code_to_key(i))
+    #debug_keys_pressed = [dataEncoder.map_code_to_key(x) if keys_pressed[x] else "-" for x in range(len(keys_pressed))].remove("-")
+    return debug_keys_pressed
+
